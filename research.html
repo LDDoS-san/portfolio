@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>研究紹介 — [あなたの名前]</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --accent: #6366f1;
+      --muted: #64748b;
+      --radius: 14px;
+      color-scheme: light;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #1e293b;
+    }
+
+    header {
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 20px;
+      color: #111827;
+    }
+
+    nav a {
+      color: #334155;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 600;
+    }
+    nav a:hover { color: var(--accent); }
+
+    main {
+      padding: 60px 40px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    .research-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 30px;
+    }
+
+    h2 {
+      color: var(--accent);
+      margin-top: 32px;
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    ul {
+      color: var(--muted);
+      padding-left: 20px;
+    }
+
+    footer {
+      padding: 24px;
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: #ffffff;
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">[あなたの名前]</div>
+    <nav>
+      <a href="index.html">ホーム</a>
+      <a href="games.html">ゲーム一覧</a>
+      <a href="research.html">研究</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>卒業研究紹介</h1>
+
+    <div class="research-card">
+      <h2>研究テーマ</h2>
+      <p><strong>「特性が未知のボトルネックリンクに対する低レートDDoS攻撃（LDoS攻撃）の戦略」</strong></p>
+
+      <h2>概要</h2>
+      <p>
+        本研究では、インターネット上の輻輳制御メカニズムを悪用する「低レートDDoS攻撃（LDoS攻撃）」に注目し、
+        特性が未知のボトルネックリンクに対して効果的な攻撃戦略を検討しました。
+      </p>
+
+      <h2>背景</h2>
+      <p>
+        一般的なDDoS攻撃は大量のトラフィックで帯域を埋め尽くしますが、LDoS攻撃はごく低い送信レートで
+        TCPやQUICの輻輳制御を妨害する点に特徴があります。
+        攻撃の検知や防御が難しいことから、ネットワークの脆弱性理解が求められています。
+      </p>
+
+      <h2>研究内容</h2>
+      <p>
+        ns-3およびCloudflareのQUIC実装（quiche）を用い、<br>
+        Docker環境でクライアント・サーバ間通信と複数アタッカーによるLDoS攻撃を再現しました。<br>
+        ルータ構成を変更しながらスループット・遅延・輻輳ウィンドウサイズを測定し、
+        攻撃周期や強度の違いが通信品質に与える影響を分析しました。
+      </p>
+
+      <h2>成果と今後の展望</h2>
+      <p>
+        攻撃周期0.3秒送信・0.7秒休止など、低頻度でも通信を著しく低下させるパターンを確認しました。<br>
+        今後は、QUICにおける複数の輻輳制御アルゴリズム（CUBIC, BBR, Reno等）への影響比較や、
+        機械学習を用いた検知アルゴリズムへの応用を検討しています。
+      </p>
+
+      <h2>使用技術・環境</h2>
+      <ul>
+        <li>シミュレータ: ns-3.44</li>
+        <li>QUIC実装: Cloudflare quiche</li>
+        <li>ネットワーク環境: quic-network-simulator, Docker Compose</li>
+        <li>可視化: Python (matplotlib, pandas)</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> [あなたの名前]</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
