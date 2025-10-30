@@ -50,7 +50,7 @@
 
     main{
       padding:60px 40px; 
-      max-width:1000px; 
+      max-width:1200px; 
       margin:auto;
     }
 
@@ -60,10 +60,16 @@
       font-size:32px;
     }
 
-    .game-list{
-      display:flex;
-      flex-direction:column;
+    .game-grid{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
       gap:24px;
+    }
+
+    @media(max-width:800px){
+      .game-grid{
+        grid-template-columns:1fr;
+      }
     }
 
     .game-card{
@@ -109,7 +115,7 @@
       font-size:14px;
     }
 
-    @media(max-width:800px){
+    @media(max-width:500px){
       .game-card{
         flex-direction:column;
       }
@@ -131,7 +137,6 @@
       background:#ffffff; 
       margin-top:60px;
     }
-
   </style>
 </head>
 <body>
@@ -146,7 +151,7 @@
 
   <main>
     <h1>制作ゲーム一覧</h1>
-    <div class="game-list" id="games">
+    <div class="game-grid" id="games">
 
       <div class="game-card">
         <img src="images/game1_icon.png" alt="ゲーム1アイコン">
