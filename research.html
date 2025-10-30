@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>研究紹介 — [あなたの名前]</title>
+  <title>研究紹介 — 小野 敬生</title>
   <style>
     :root {
       --bg: #f9fafb;
@@ -96,11 +96,13 @@
 </head>
 <body>
   <header>
-    <div class="logo">[あなたの名前]</div>
+    <div class="logo">小野 敬生</div>
     <nav>
       <a href="index.html">ホーム</a>
       <a href="games.html">ゲーム一覧</a>
       <a href="research.html">研究</a>
+      <a href="projects.html">その他制作物</a>
+      <a href="#summary">About</a>
     </nav>
   </header>
 
@@ -109,17 +111,17 @@
 
     <div class="research-card">
       <h2>研究テーマ</h2>
-      <p><strong>「特性が未知のボトルネックリンクに対する低レートDDoS攻撃（LDoS攻撃）の戦略」</strong></p>
+      <p><strong>「TCPおよびQUICにおける複数の輻輳制御アルゴリズムに対するLDDoS攻撃耐性」</strong></p>
 
       <h2>概要</h2>
       <p>
-        本研究では、インターネット上の輻輳制御メカニズムを悪用する「低レートDDoS攻撃（LDoS攻撃）」に注目し、
-        特性が未知のボトルネックリンクに対して効果的な攻撃戦略を検討しました。
+        本研究では、インターネット上の輻輳制御メカニズムを悪用する「低レートDDoS攻撃（LDDoS攻撃）」に注目し、
+        輻輳制御アルゴリズムごとの耐性を検証した。また、より耐性のある輻輳制御アルゴリズムを開発した。
       </p>
 
       <h2>背景</h2>
       <p>
-        一般的なDDoS攻撃は大量のトラフィックで帯域を埋め尽くしますが、LDoS攻撃はごく低い送信レートで
+        一般的なDDoS攻撃は大量のトラフィックで帯域を埋め尽くすが、LDoS攻撃は一定の周期でトラフィックを送り
         TCPやQUICの輻輳制御を妨害する点に特徴があります。
         攻撃の検知や防御が難しいことから、ネットワークの脆弱性理解が求められています。
       </p>
@@ -141,10 +143,12 @@
 
       <h2>使用技術・環境</h2>
       <ul>
-        <li>シミュレータ: ns-3.44</li>
+        <li>OS / 環境: Ubuntu</li>
+        <li>コンテナ / 仮想環境: Docker</li>
+        <li>シミュレータ: ns-3</li>
         <li>QUIC実装: Cloudflare quiche</li>
-        <li>ネットワーク環境: quic-network-simulator, Docker Compose</li>
-        <li>可視化: Python (matplotlib, pandas)</li>
+        <li>ネットワーク環境: quic-network-simulator</li>
+        <li>分析: WireShark, Python (matplotlib, pandas)</li>
       </ul>
     </div>
   </main>
