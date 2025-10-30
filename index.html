@@ -7,22 +7,52 @@
   <meta name="description" content="小野 敬生のポートフォリオ。ソフトウェア・ゲーム・Web開発の代表作を紹介します。" />
   <style>
     :root{
-      --bg:#f0f4f8; --card:#ffffff; --accent:#6366f1; --highlight:#e0e7ff; --muted:#475569; --radius:14px;
-      color-scheme: light; font-family: 'Inter', system-ui, sans-serif;
+      --bg:#f0f4f8; 
+      --card:#ffffff; 
+      --accent:#6366f1; 
+      --highlight:#e0e7ff; 
+      --muted:#475569; 
+      --radius:14px;
+      color-scheme: light; 
+      font-family: 'Inter', system-ui, sans-serif;
     }
     *{box-sizing:border-box;}
     body{margin:0; background:var(--bg); color:#1e293b;}
-    header{padding:24px 40px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:rgba(240,244,248,0.95); backdrop-filter:blur(8px); box-shadow:0 2px 6px rgba(0,0,0,0.05); z-index:100;}
-    header .logo{font-weight:800; font-size:20px; letter-spacing:0.5px; color:#111827;}
+    
+    /* ===== HEADER ===== */
+    header{
+      padding:24px 40px; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      position:sticky; top:0; 
+      background:rgba(240,244,248,0.95); 
+      backdrop-filter:blur(8px); 
+      box-shadow:0 2px 6px rgba(0,0,0,0.05); 
+      z-index:100;
+    }
+    .logo{font-weight:800; font-size:20px; letter-spacing:0.5px; color:#111827;}
     nav a{color:#334155; text-decoration:none; margin:0 12px; font-weight:600;}
     nav a:hover{color:var(--accent)}
 
     /* ===== HERO ===== */
     .hero{
-      position:relative; height:85vh; background:url('images/featured_main.jpg') center/cover no-repeat; display:flex; align-items:center; justify-content:center; text-align:center; color:#1e293b;
+      position:relative; height:85vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#1e293b; overflow:hidden;
     }
-    .hero::before{content:''; position:absolute; inset:0; background:rgba(224,231,255,0.5);}
-    .hero-content{position:relative; z-index:1; max-width:800px; padding:0 16px;}
+    .hero-slides{
+      position:absolute; inset:0; z-index:0;
+    }
+    .slide{
+      position:absolute; inset:0; background-size:cover; background-position:center; background-repeat:no-repeat;
+      opacity:0; transition:opacity 1.5s ease-in-out;
+    }
+    .slide.active{opacity:1;}
+    .hero::before{
+      content:''; position:absolute; inset:0; background:rgba(224,231,255,0.5); z-index:1;
+    }
+    .hero-content{
+      position:relative; z-index:2; max-width:800px; padding:0 16px;
+    }
     .hero h1{font-size:42px; margin-bottom:12px; color:#111827;}
     .hero p{color:#334155; margin-bottom:20px; font-size:18px;}
     .hero .btn{display:inline-block; padding:12px 22px; background:var(--accent); color:white; font-weight:700; border-radius:10px; text-decoration:none; transition:0.2s;}
@@ -65,7 +95,14 @@
     </nav>
   </header>
 
+  <!-- ===== HERO SECTION ===== -->
   <section class="hero">
+    <div class="hero-slides">
+      <div class="slide active" style="background-image: url('images/game2_icon.png');"></div>
+      <div class="slide" style="background-image: url('images/game3_icon.png');"></div>
+      <div class="slide" style="background-image: url('images/game4_icon.png');"></div>
+      <div class="slide" style="background-image: url('images/game5_icon.png');"></div>
+    </div>
     <div class="hero-content">
       <h1>“つくることで仕組みを理解する”</h1>
       <p>ネットワーク、ゲーム、Web。多分野で動くものを設計し、形にしてきました。</p>
@@ -73,6 +110,7 @@
     </div>
   </section>
 
+  <!-- ===== PROJECTS ===== -->
   <section class="projects" id="projects">
     <h2>代表・主要プロジェクト</h2>
     <div class="project-grid">
@@ -86,10 +124,10 @@
       </a>
 
       <a href="research.html" class="project-card">
-        <img src="images/projectA.jpg" alt="プロジェクトAのサムネイル">
+        <img src="images/projectA.jpg" alt="卒業研究のサムネイル">
         <div class="info">
           <h3>卒業研究</h3>
-          <p>Docker＋ns-3＋QUICを組み合わせた通信再現実験環境。LDoS攻撃の挙動を可視化。</p>
+          <p>Docker＋ns-3＋Cloudflare quicheを組み合わせた通信再現実験環境。LDoS攻撃の挙動を可視化。Rustも使用。</p>
         </div>
       </a>
 
@@ -104,22 +142,34 @@
     </div>
   </section>
 
+  <!-- ===== SUMMARY ===== -->
   <section class="summary" id="summary">
     <h2>できること・得意分野</h2>
     <p>ネットワークシミュレーション（ns-3, QUIC）, システム設計, Unityを使ったゲーム開発。<br>
        研究・開発・表現の3軸で、動作原理を理解しながら「再現性のある技術」を形にします。</p>
   </section>
 
+  <!-- ===== FOOTER ===== -->
   <footer id="contact">
     <p>📧 takao.ono@nislab.doshisha.ac.jp ｜ 🌐 <a href="#" style="color:var(--accent); text-decoration:none">GitHub</a> / <a href="#" style="color:var(--accent); text-decoration:none">LinkedIn</a></p>
     <p>© <span id="year"></span> 小野 敬生</p>
   </footer>
 
+  <!-- ===== SCRIPTS ===== -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ===== HERO SLIDESHOW =====
+    const slides = document.querySelectorAll('.hero .slide');
+    let current = 0;
+
+    function nextSlide() {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }
+
+    setInterval(nextSlide, 5000);
   </script>
 </body>
 </html>
-
-
-
