@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>小野 敬生 — ゲーム一覧</title>
-  <meta name="description" content="小野 敬生の制作したゲーム一覧ページです。アイコン、タイトル、カテゴリ、説明をまとめて紹介します。" />
+  <meta name="description" content="小野 敬生の制作したゲーム一覧ページです。UnityとEclipse(Java)で制作した作品を紹介します。" />
   <style>
     :root{
       --bg:#f9fafb; 
@@ -54,11 +54,13 @@
       margin:auto;
     }
 
-    h1{
+    h1, h2{
       text-align:center; 
-      margin-bottom:40px; 
-      font-size:32px;
+      margin-bottom:40px;
     }
+
+    h1{ font-size:32px; }
+    h2{ font-size:26px; margin-top:60px; }
 
     .game-grid{
       display:grid;
@@ -153,10 +155,13 @@
 
   <main>
     <h1>制作ゲーム一覧</h1>
-    <div class="game-grid" id="games">
+
+    <!-- ================= UNITY ================= -->
+    <h2>Unity作品</h2>
+    <div class="game-grid">
 
       <div class="game-card">
-        <img src="images/game1_icon.png" alt="ゲーム1アイコン">
+        <img src="images/game1_icon.png" alt="ホラーゲーム">
         <div class="game-info">
           <span class="category">ホラー / アドベンチャー / 謎解き / Unity</span>
           <h3>ホラーゲーム</h3>
@@ -165,16 +170,16 @@
       </div>
 
       <div class="game-card">
-        <img src="images/game2_icon.png" alt="ゲーム2アイコン">
+        <img src="images/game2_icon.png" alt="図書館警察シミュレーター">
         <div class="game-info">
           <span class="category">シミュレーション / アドベンチャー / Unity</span>
           <h3>図書館警察シミュレーター</h3>
-          <p>1~2時間遊べるシミュレーションゲーム。<strong>一時間以上飽きずに</strong>遊んでもらえるゲームを目指し、ボリュームと飽きさせないシステムに注力。</p>
+          <p>1~2時間遊べるシミュレーションゲーム。<strong>飽きずに遊べるシステム設計</strong>に注力。</p>
         </div>
       </div>
 
       <div class="game-card">
-        <img src="images/game3_icon.png" alt="ゲーム3アイコン">
+        <img src="images/game3_icon.png" alt="機械学習ボードゲーム">
         <div class="game-info">
           <span class="category">ストラテジー / 機械学習 / Unity</span>
           <h3>機械学習ボードゲーム</h3>
@@ -183,64 +188,72 @@
       </div>
 
       <div class="game-card">
-        <img src="images/game4_icon.png" alt="ゲーム4アイコン">
+        <img src="images/game4_icon.png" alt="RPG">
         <div class="game-info">
           <span class="category">アクション / RPG / Unity</span>
           <h3>RPG</h3>
-          <p>一般的なアクションゲーム。<strong>初めてUnityで制作した</strong>ゲーム。Unityの自由度の高さに驚く。</p>
+          <p><strong>初めてUnityで制作した</strong>アクションゲーム。Unityの自由度の高さを体感した。</p>
         </div>
       </div>
 
       <div class="game-card">
-        <img src="images/game5_icon.png" alt="ゲーム5アイコン">
-        <div class="game-info">
-          <span class="category">謎解き / RPG / Eclipse(Java)</span>
-          <h3>猫の脱出</h3>
-          <p>大学1回生で初めてチーム(一応)で作ったゲーム。Javaの<strong>GUIを独学で</strong>学んだ。</p>
-        </div>
-      </div>
-
-      <div class="game-card">
-        <img src="images/game6_icon.png" alt="ゲーム6アイコン">
+        <img src="images/game6_icon.png" alt="サムライ対決">
         <div class="game-info">
           <span class="category">アクション / ソードアクション / Unity</span>
           <h3>サムライ対決</h3>
-          <p>回避やカウンターを駆使して戦うアクションゲーム。<strong>アニメーションの修正など</strong>細かいテクニックを学んだ。諸事情で一週間で作った。</p>
+          <p>回避やカウンターを駆使して戦うアクションゲーム。<strong>短期間での完成度向上</strong>を重視。</p>
         </div>
       </div>
- 
+
       <div class="game-card">
-        <img src="images/game7_icon.png" alt="ゲーム7アイコン">
+        <img src="images/game7_icon.png" alt="Winter Wars">
         <div class="game-info">
           <span class="category">アクション / タイピング / Unity</span>
           <h3>Winter Wars</h3>
-          <p>サマーウォーズのように、忙しなくキーボードをたたくようなアクションゲーム。様々な技術を使って<strong>多彩な攻撃</strong>を実装した。</p>
+          <p>サマーウォーズ風のキーボードアクション。多彩な攻撃演出を<strong>スクリプトで表現</strong>。</p>
         </div>
       </div>
-    
+    </div>
+
+    <!-- ================= ECLIPSE ================= -->
+    <h2>Eclipse(Java)作品</h2>
+    <div class="game-grid">
+
       <div class="game-card">
-        <img src="images/game8_icon.png" alt="ゲーム8アイコン">
+        <img src="images/game5_icon.png" alt="猫の脱出">
+        <div class="game-info">
+          <span class="category">謎解き / RPG / Eclipse(Java)</span>
+          <h3>猫の脱出</h3>
+          <p>大学1回生で初めてチームで作ったゲーム。Javaの<strong>GUIを独学で</strong>学びながら開発。</p>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <img src="images/game8_icon.png" alt="テトリス">
         <div class="game-info">
           <span class="category">再現作品 / パズル / Eclipse(Java)</span>
           <h3>テトリス</h3>
-          <p>JavaのGUIでテトリスを再現した。振り返ると、あんなにも<strong>ゲーム開発に向いてない環境</strong>でよく頑張ったと思う。</p>
+          <p>JavaのGUIでテトリスを再現。限られた環境でも<strong>根気強く完成</strong>させた。</p>
         </div>
       </div>
       
       <div class="game-card">
-        <img src="images/game9_icon.png" alt="ゲーム9アイコン">
+        <img src="images/game9_icon.png" alt="オセロ">
         <div class="game-info">
           <span class="category">再現作品 / ボードゲーム / Eclipse(Java)</span>
           <h3>オセロ</h3>
-          <p>JavaのCUIでオセロを再現した。おそらく<strong>人生で初めて作った</strong>ゲーム。CUIとオセロは相性が良く、簡単に実装できた。</p>
+          <p>JavaのCUIでオセロを再現。<strong>人生で初めて作った</strong>ゲーム。ロジック実装の基礎を学んだ。</p>
         </div>
       </div>
-      
+
     </div>
   </main>
 
   <footer id="contact">
-    <p>📧 takao.ono@nislab.doshisha.ac.jp ｜ 🌐 <a href="#" style="color:var(--accent); text-decoration:none">GitHub</a> / <a href="#" style="color:var(--accent); text-decoration:none">LinkedIn</a></p>
+    <p>📧 takao.ono@nislab.doshisha.ac.jp ｜ 🌐 
+      <a href="#" style="color:var(--accent); text-decoration:none">GitHub</a> / 
+      <a href="#" style="color:var(--accent); text-decoration:none">LinkedIn</a>
+    </p>
     <p>© <span id="year"></span> 小野 敬生</p>
   </footer>
 
