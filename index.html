@@ -39,14 +39,21 @@
     .hero{
       position:relative; height:85vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#1e293b; overflow:hidden;
     }
-    .hero-slides{
-      position:absolute; inset:0; z-index:0;
+
+    /* 横スクロールアニメーション */
+    .hero-slides {
+      position:absolute; inset:0; z-index:0; display:flex; width:calc(100% * 12); /* 画像×2セット */
+      animation: scroll 40s linear infinite;
     }
-    .slide{
-      position:absolute; inset:0; background-size:cover; background-position:center; background-repeat:no-repeat;
-      opacity:0; transition:opacity 1.5s ease-in-out;
+    .hero-slides img {
+      width:100vw; height:100%; object-fit:cover; flex-shrink:0;
+      filter:brightness(0.85);
     }
-    .slide.active{opacity:1;}
+    @keyframes scroll {
+      from { transform:translateX(0); }
+      to { transform:translateX(-50%); } /* 半分まで動かす（2セットあるので） */
+    }
+
     .hero::before{
       content:''; position:absolute; inset:0; background:rgba(224,231,255,0.5); z-index:1;
     }
@@ -97,17 +104,25 @@
   <!-- ===== HERO SECTION ===== -->
   <section class="hero">
     <div class="hero-slides">
-      <div class="slide active" style="background-image: url('images/game02_icon.png');"></div>
-      <div class="slide" style="background-image: url('images/game03_icon.png');"></div>
-      <div class="slide" style="background-image: url('images/game04_icon.png');"></div>
-      <div class="slide" style="background-image: url('images/game05_icon.png');"></div>
-      <div class="slide" style="background-image: url('images/game06_icon.png');"></div>
-      <div class="slide" style="background-image: url('images/game10_icon.png');"></div>
+      <!-- 画像を2セット並べると無限ループっぽく見える -->
+      <img src="images/game02_icon.png" alt="">
+      <img src="images/game03_icon.png" alt="">
+      <img src="images/game04_icon.png" alt="">
+      <img src="images/game05_icon.png" alt="">
+      <img src="images/game06_icon.png" alt="">
+      <img src="images/game10_icon.png" alt="">
+
+      <img src="images/game02_icon.png" alt="">
+      <img src="images/game03_icon.png" alt="">
+      <img src="images/game04_icon.png" alt="">
+      <img src="images/game05_icon.png" alt="">
+      <img src="images/game06_icon.png" alt="">
+      <img src="images/game10_icon.png" alt="">
     </div>
     <div class="hero-content">
       <h1>“つくることで仕組みを理解する”</h1>
       <p>ネットワーク、ゲーム、Web。多分野で動くものを設計し、形にしてきました。</p>
-      <a href="#games.html" class="btn">ゲーム作品を見る</a>
+      <a href="#projects" class="btn">ゲーム作品を見る</a>
     </div>
   </section>
 
@@ -115,7 +130,6 @@
   <section class="projects" id="projects">
     <h2>代表・主要プロジェクト</h2>
     <div class="project-grid">
-
       <a href="games.html" class="project-card">
         <img src="images/games_thumbnail.png" alt="Unityゲームのサムネイル">
         <div class="info">
@@ -139,7 +153,6 @@
           <p>実験結果をグラフ化・共有するWebアプリ。バックエンドはFastAPI + SQLite。</p>
         </div>
       </a>
-
     </div>
   </section>
 
@@ -156,24 +169,8 @@
     <p>© <span id="year"></span> 小野 敬生</p>
   </footer>
 
-  <!-- ===== SCRIPTS ===== -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    // ===== HERO SLIDESHOW =====
-    const slides = document.querySelectorAll('.hero .slide');
-    let current = 0;
-
-    function nextSlide() {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
-    }
-
-    setInterval(nextSlide, 3000);
   </script>
 </body>
 </html>
-
-
-
