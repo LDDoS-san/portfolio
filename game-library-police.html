@@ -1,0 +1,1007 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>図書館警察シミュレーター 制作記事 — 小野 敬生のポートフォリオ</title>
+  <meta name="description" content="図書館警察シミュレーターの制作記事。1〜2時間遊べるゲームを目指した設計、データ管理、テストプレイ、反省点を紹介します。" />
+  <style>
+    :root{
+      --bg:#f9fafb;
+      --card:#ffffff;
+      --accent:#6366f1;
+      --accent-soft:#eef2ff;
+      --accent-line:rgba(99, 102, 241, 0.22);
+      --text:#1e293b;
+      --muted:#64748b;
+      --strong:#111827;
+      --radius:14px;
+      color-scheme: light;
+      font-family:'Inter', system-ui, sans-serif;
+    }
+
+    *{box-sizing:border-box;}
+    html,
+    body{
+      overflow-x:clip;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.85;
+    }
+
+    header{
+      padding:24px 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#ffffff;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
+    .logo{
+      font-weight:800;
+      font-size:20px;
+      color:#111827;
+    }
+    nav a{
+      color:#334155;
+      text-decoration:none;
+      margin:0 12px;
+      font-weight:600;
+    }
+    nav a:hover{color:var(--accent);}
+
+    @media(max-width:640px){
+      header{
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
+        padding:12px 14px;
+      }
+      .logo{
+        text-align:center;
+        font-size:17px;
+        line-height:1.35;
+      }
+      nav{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        column-gap:2px;
+        row-gap:4px;
+      }
+      nav a{
+        margin:0;
+        padding:6px 10px;
+        font-size:13px;
+      }
+      main{
+        width:100vw;
+        max-width:100vw;
+        padding-left:18px;
+        padding-right:18px;
+      }
+    }
+
+    main{
+      width:100%;
+      max-width:1120px;
+      margin:0 auto;
+      padding:48px 40px 72px;
+    }
+
+    .back-link{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-bottom:24px;
+      color:var(--accent);
+      font-weight:800;
+      text-decoration:none;
+    }
+    .back-link:hover{text-decoration:underline;}
+
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap:32px;
+      align-items:center;
+      padding:32px;
+      border-radius:var(--radius);
+      background:linear-gradient(135deg, #ffffff, #eef2ff);
+      border:1px solid var(--accent-line);
+      box-shadow:0 10px 28px rgba(15, 23, 42, 0.08);
+      overflow:hidden;
+    }
+    .hero > *{
+      min-width:0;
+    }
+    .eyebrow{
+      display:inline-block;
+      margin:0 0 12px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(99, 102, 241, 0.12);
+      color:#4f46e5;
+      font-size:13px;
+      font-weight:800;
+    }
+    h1{
+      margin:0 0 16px;
+      color:var(--strong);
+      font-size:clamp(30px, 5vw, 48px);
+      line-height:1.18;
+      letter-spacing:0;
+    }
+    .hero-lead{
+      margin:0;
+      color:#334155;
+      font-size:17px;
+      overflow-wrap:anywhere;
+    }
+    .hero-focus{
+      margin:18px 0 0;
+      padding:16px 18px;
+      border-radius:12px;
+      background:#111827;
+      color:#ffffff;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.7;
+      overflow-wrap:anywhere;
+    }
+    .hero-focus span{
+      color:#c7d2fe;
+    }
+    .hero-image{
+      margin:0;
+      overflow:hidden;
+      border-radius:12px;
+      box-shadow:0 16px 36px rgba(15, 23, 42, 0.16);
+      background:#fff;
+    }
+    .hero-image img{
+      display:block;
+      width:100%;
+      max-width:100%;
+      aspect-ratio:16 / 10;
+      object-fit:cover;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:16px;
+      margin:28px 0 40px;
+    }
+    .summary-card{
+      padding:18px;
+      border-radius:12px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .summary-card span{
+      display:block;
+      margin-bottom:6px;
+      color:var(--accent);
+      font-size:13px;
+      font-weight:800;
+    }
+    .summary-card strong{
+      display:block;
+      color:var(--strong);
+      font-size:17px;
+      line-height:1.45;
+    }
+
+    .article-layout{
+      display:grid;
+      grid-template-columns:220px minmax(0, 1fr);
+      gap:32px;
+      align-items:start;
+    }
+    .toc{
+      position:sticky;
+      top:96px;
+      z-index:20;
+      align-self:start;
+      max-height:calc(100vh - 120px);
+      overflow-y:auto;
+      padding:16px;
+      border-radius:12px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .toc h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--strong);
+    }
+    .toc a{
+      display:block;
+      padding:6px 0;
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      text-decoration:none;
+      line-height:1.5;
+    }
+    .toc a:hover{color:var(--accent);}
+
+    article{
+      min-width:0;
+    }
+    section{
+      margin:0 0 42px;
+      padding:28px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+      scroll-margin-top:130px;
+    }
+    section h2{
+      margin:0 0 16px;
+      color:var(--strong);
+      font-size:26px;
+      line-height:1.35;
+    }
+    section h3{
+      margin:24px 0 10px;
+      color:var(--strong);
+      font-size:18px;
+      line-height:1.45;
+    }
+    p{
+      margin:0 0 14px;
+      color:#334155;
+    }
+    p:last-child{margin-bottom:0;}
+
+    .section-lead{
+      margin:0 0 18px;
+      padding:14px 16px;
+      border-radius:12px;
+      background:var(--accent-soft);
+      border:1px solid var(--accent-line);
+      color:#312e81;
+      font-size:15px;
+      font-weight:800;
+      line-height:1.7;
+      overflow-wrap:anywhere;
+    }
+
+    .callout{
+      margin:20px 0;
+      padding:18px 20px;
+      border-left:4px solid var(--accent);
+      border-radius:10px;
+      background:var(--accent-soft);
+    }
+    .callout strong{
+      display:block;
+      margin-bottom:4px;
+      color:#3730a3;
+    }
+    .quote-problem{
+      margin:20px 0;
+      padding:22px;
+      border-radius:12px;
+      background:#111827;
+      color:#ffffff;
+      text-align:center;
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:16px;
+      margin:20px 0;
+    }
+    .triad{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .mini-card{
+      padding:16px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .mini-card h3{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+    .mini-card p{
+      margin:0;
+      font-size:14px;
+    }
+
+    .visual-flow{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin:18px 0 20px;
+      align-items:stretch;
+    }
+    .flow-chip{
+      position:relative;
+      padding:14px 14px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#111827;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.55;
+      text-align:center;
+    }
+    .flow-chip:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      right:-9px;
+      top:50%;
+      width:8px;
+      height:8px;
+      border-top:2px solid var(--accent);
+      border-right:2px solid var(--accent);
+      transform:translateY(-50%) rotate(45deg);
+    }
+
+    .metric-row{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .metric{
+      padding:16px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      text-align:center;
+    }
+    .metric strong{
+      display:block;
+      color:var(--accent);
+      font-size:24px;
+      line-height:1.2;
+    }
+    .metric span{
+      display:block;
+      margin-top:6px;
+      color:#475569;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.45;
+    }
+
+    .before-after{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .before-after div{
+      padding:16px;
+      border-radius:12px;
+      border:1px solid #e2e8f0;
+      background:#f8fafc;
+    }
+    .before-after strong{
+      display:block;
+      margin-bottom:6px;
+      color:#111827;
+      font-size:15px;
+    }
+    .before-after .after{
+      border-color:var(--accent-line);
+      background:var(--accent-soft);
+    }
+
+    .process-list{
+      display:grid;
+      gap:12px;
+      margin:18px 0 0;
+      padding:0;
+      list-style:none;
+      counter-reset:step;
+    }
+    .process-list li{
+      position:relative;
+      padding:16px 16px 16px 56px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .process-list li::before{
+      counter-increment:step;
+      content:counter(step);
+      position:absolute;
+      top:16px;
+      left:16px;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:var(--accent);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .image-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+      margin:22px 0 0;
+    }
+    .image-grid figure{
+      margin:0;
+      overflow:hidden;
+      border-radius:12px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+    }
+    .image-grid img{
+      display:block;
+      width:100%;
+      aspect-ratio:16 / 9;
+      object-fit:cover;
+    }
+    .image-grid figcaption{
+      padding:10px 12px;
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.5;
+    }
+
+    .takeaway{
+      background:linear-gradient(135deg, #eef2ff, #ffffff);
+      border-color:var(--accent-line);
+    }
+    .takeaway ul{
+      margin:14px 0 0;
+      padding-left:20px;
+      color:#334155;
+    }
+    .takeaway li{
+      margin:8px 0;
+    }
+
+    .article-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+    .details-list{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+    .detail-item{
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      background:#f8fafc;
+      overflow:hidden;
+    }
+    .detail-item summary{
+      cursor:pointer;
+      padding:14px 16px;
+      color:#111827;
+      font-size:16px;
+      font-weight:900;
+      line-height:1.5;
+      list-style:none;
+    }
+    .detail-item summary::-webkit-details-marker{
+      display:none;
+    }
+    .detail-item summary::after{
+      content:"+";
+      float:right;
+      color:var(--accent);
+      font-size:18px;
+      line-height:1.2;
+    }
+    .detail-item[open] summary::after{
+      content:"-";
+    }
+    .detail-item-body{
+      padding:0 16px 16px;
+      border-top:1px solid #e2e8f0;
+    }
+    .detail-item-body p{
+      margin-top:12px;
+    }
+    .button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 18px;
+      border-radius:10px;
+      background:var(--accent);
+      color:#ffffff;
+      font-weight:800;
+      text-decoration:none;
+    }
+    .button.secondary{
+      background:#ffffff;
+      color:var(--accent);
+      border:1px solid var(--accent-line);
+    }
+
+    .plain-article{
+      display:block;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      margin:0;
+      padding:32px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 8px 24px rgba(15, 23, 42, 0.06);
+      color:var(--text);
+      font:inherit;
+      line-height:1.9;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      word-wrap:break-word;
+      word-break:break-all;
+      overflow-x:hidden;
+    }
+
+    .article-hero{
+      position:relative;
+      margin-bottom:28px;
+      padding:34px 38px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid var(--accent-line);
+      box-shadow:0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    .article-title-row{
+      display:block;
+      padding-right:190px;
+      margin-bottom:20px;
+    }
+    .article-title-icon{
+      position:absolute;
+      top:34px;
+      right:38px;
+      width:156px;
+      height:156px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 10px 24px rgba(15, 23, 42, 0.16);
+      background:#f1f5f9;
+    }
+    .article-hero h1{
+      flex:1 1 auto;
+      max-width:900px;
+      margin:0;
+      font-size:clamp(30px, 4.6vw, 52px);
+      line-height:1.22;
+    }
+    .article-hero h1 span{
+      display:block;
+    }
+    .article-hero h1 span:first-child{
+      white-space:nowrap;
+    }
+    .article-hero h1 span + span{
+      margin-top:6px;
+      font-size:0.82em;
+      color:#334155;
+    }
+    .intro-text{
+      display:grid;
+      gap:14px;
+      width:100%;
+      padding:20px 22px;
+      border-left:5px solid var(--accent);
+      border-radius:0 12px 12px 0;
+      background:var(--accent-soft);
+    }
+    .intro-text p{
+      margin:0;
+      color:#243247;
+      font-size:16px;
+      font-weight:650;
+      line-height:1.9;
+    }
+    .polished-article-layout{
+      margin-top:0;
+    }
+    .article-body{
+      display:grid;
+      gap:24px;
+    }
+    .article-body section{
+      padding:32px 36px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 8px 24px rgba(15, 23, 42, 0.055);
+      scroll-margin-top:128px;
+    }
+    .article-body section h2{
+      position:relative;
+      margin:0 0 22px;
+      padding-left:18px;
+      color:var(--strong);
+      font-size:26px;
+      line-height:1.45;
+    }
+    .article-body section h2::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0.35em;
+      bottom:0.35em;
+      width:5px;
+      border-radius:999px;
+      background:var(--accent);
+    }
+    .article-body p{
+      margin:16px 0 0;
+      color:#26364d;
+      font-size:16px;
+      line-height:2;
+    }
+    .article-body strong{
+      color:#3730a3;
+      font-weight:900;
+      background:linear-gradient(transparent 62%, rgba(199, 210, 254, 0.78) 62%);
+    }
+    .article-body hr{
+      height:1px;
+      margin:28px 0;
+      border:0;
+      background:#e5e7eb;
+    }
+    .article-body hr:last-child{
+      display:none;
+    }
+    .subsection{
+      margin-top:26px;
+      padding:22px 24px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .subsection h3{
+      margin:0 0 12px;
+      color:#111827;
+      font-size:19px;
+      line-height:1.55;
+    }
+    .subsection p:first-of-type{
+      margin-top:0;
+    }
+    .article-body .article-actions{
+      margin-top:4px;
+      padding:24px 0 0;
+    }
+
+    footer{
+      padding:24px;
+      text-align:center;
+      color:#64748b;
+      font-size:14px;
+      border-top:1px solid rgba(0,0,0,0.05);
+      background:#ffffff;
+    }
+
+    @media(max-width:900px){
+      main{
+        width:100vw;
+        max-width:100vw;
+        padding:32px 18px 56px;
+      }
+      .hero{
+        grid-template-columns:1fr;
+        padding:18px;
+      }
+      .hero-focus{
+        width:100%;
+        max-width:280px;
+        font-size:13px;
+        padding:12px 14px;
+        line-height:1.65;
+        word-break:break-all;
+      }
+      .hero-image{
+        width:100%;
+        max-width:280px;
+      }
+      .summary-grid{
+        grid-template-columns:1fr;
+      }
+      .article-layout{
+        grid-template-columns:1fr;
+      }
+      .toc{
+        position:sticky;
+        top:104px;
+        max-height:42vh;
+      }
+      .toc div{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        column-gap:12px;
+      }
+      .article-hero{
+        padding:24px 22px;
+      }
+      .article-title-row{
+        padding-right:116px;
+      }
+      .article-title-icon{
+        top:24px;
+        right:22px;
+        width:102px;
+        height:102px;
+        border-radius:12px;
+      }
+      .intro-text{
+        padding:16px 18px;
+      }
+    }
+
+    @media(max-width:560px){
+      section{
+        padding:20px;
+      }
+      .article-hero{
+        padding:22px 18px;
+      }
+      .article-title-row{
+        padding-right:98px;
+      }
+      .article-title-icon{
+        top:22px;
+        right:18px;
+        width:86px;
+        height:86px;
+        border-radius:10px;
+      }
+      .article-hero h1{
+        font-size:21px;
+      }
+      .article-hero h1 span + span{
+        font-size:0.68em;
+        white-space:nowrap;
+      }
+      .article-body section{
+        padding:24px 20px;
+      }
+      .article-body section h2{
+        font-size:22px;
+        padding-left:14px;
+      }
+      .subsection{
+        padding:18px 16px;
+      }
+      .split,
+      .triad,
+      .visual-flow,
+      .metric-row,
+      .before-after,
+      .image-grid{
+        grid-template-columns:1fr;
+      }
+      .flow-chip:not(:last-child)::after{
+        display:none;
+      }
+      .toc div{
+        grid-template-columns:1fr;
+      }
+      .quote-problem{
+        font-size:18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">小野 敬生のポートフォリオ</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="games.html">ゲーム作品</a>
+      <a href="research.html">研究</a>
+      <a href="others.html">その他作品</a>
+    </nav>
+  </header>
+
+  <main>
+    <a class="back-link" href="games.html">← ゲーム作品一覧へ戻る</a>
+
+    <div class="article-hero">
+      <p class="eyebrow">Unity / 個人制作 / シミュレーション</p>
+      <div class="article-title-row">
+        <h1 aria-label="図書館警察シミュレーター｜ゲーム全体の完成度を重視した個人制作">
+          <span>図書館警察シミュレーター</span>
+          <span>ゲーム全体の完成度を重視した個人制作</span>
+        </h1>
+        <img class="article-title-icon" src="images/game02_icon.png" alt="図書館警察シミュレーターのアイコン">
+      </div>
+      <div class="intro-text">
+        <p>これまでの個人制作では、一つのアイデアやゲーム性に特化した短時間の作品を作ることが多かったため、本作では<strong>1〜2時間遊べるゲームとして、全体の完成度を高めること</strong>を目標にしました。</p>
+          <p>自分が作りたいものをそのまま実装するのではなく、実際に人に遊んでもらうことを前提に、ゲーム進行、操作、UI、データ管理、デバッグ方法、空間の見せ方まで含めて調整しています。開発期間は約2か月です。</p>
+      </div>
+    </div>
+
+    <div class="article-layout polished-article-layout">
+      <aside class="toc" aria-label="目次">
+        <h2>目次</h2>
+        <div>
+          <a href="#sec-1">1〜2時間飽きずに遊べるゲーム</a>
+          <a href="#sec-2">テストプレイでUI・ゲームバランス改善</a>
+          <a href="#sec-3">80人・800件のデータを管理</a>
+          <a href="#sec-4">長時間ゲームを効率よくデバッグする</a>
+          <a href="#sec-5">限られたアセットで学校らしい学校を</a>
+          <a href="#sec-6">ゲーム内PCも長時間プレイを前提に</a>
+          <a href="#sec-7">操作記録からOP演出を制作</a>
+        </div>
+      </aside>
+
+      <article class="article-body">
+        <section id="sec-1">
+          <h2>1〜2時間飽きずに遊べるゲーム</h2>
+          <p>実装前からゲーム全体の流れを書き出し、「この作業をどの程度続けたら次の要素を出すか」「同じ種類の操作が長く続いていないか」といったことを考えながら進行を設計しました。</p>
+          <p>ゲーム内では、貸出履歴を確認して未返却者へ文章を入力して連絡する作業、校内にいる人物を探す探索、SNSの投稿から怪しい内容を見つける作業、別の階にあるゴミ箱を確認する作業、対象までの距離を頼りに探す探索など、性質の異なるタスクを用意しています。</p>
+          <p>特に、PC上で行う作業と3D空間を歩く作業が偏らないよう、交互に配置しました。</p>
+          <p>同じ3D探索でも内容は変えています。対象の位置がまったく分からずしらみつぶしに探すもの、場所のヒントから推測して探すもの、対象までの距離の変化から位置を絞り込むもの、場所自体は分かっていてそこまで移動するものなど、<strong>操作が似ていてもプレイヤーが考えることは変わるようにしました。</strong></p>
+          <p>また、ゲームを進めるにつれて、それまで手作業で行っていた一部の作業を自動化できる仕組みを入れています。作業ゲームとして同じ行動を繰り返す面白さは残しつつ、最後まで同じ状態が続くのではなく、プレイヤー自身が徐々に効率化していく変化を持たせました。</p>
+          <hr>
+          <div class="subsection">
+            <h3>飽きないだけでなく、疲れないようにする</h3>
+            <p>1時間以上遊ぶことを考えると、遊びに変化があるだけでなく、操作や情報処理そのものに疲れないことも必要だと考えました。</p>
+            <p>そのため、ゲーム性を必要以上に複雑にせず、操作についても「本当に必要か」を何度もプレイしながら見直しています。</p>
+            <p>例えば当初は、Shiftキーで歩きと走りを切り替えられるようにしていました。しかし実際には歩く必要のある場面がほとんどなく、繰り返し遊ぶと単にShiftを押す手間になっていました。そのため切り替え自体を削除し、WASDだけで必要な速度で移動できるようにしました。</p>
+            <p>1日のリザルト画面も、当初は演出を長めにしていましたが、何度も見るうちに、表示内容は変わっても画面自体は大きく変化しないため、長い演出がストレスになると感じました。そこで必要な情報は残しながらテンポを速めています。オープニングについても世界観を伝えるための長さは確保しつつ、不要な場合はスキップできるようにしました。</p>
+            <p>自分で1時間以上のゲームを何度もデバッグしたことで、最初は気にならなかった小さなストレスにも気付くようになりました。<strong>「一般的なゲームにある機能だから入れる」のではなく、このゲームに本当に必要かを考える</strong>ようになった部分です。</p>
+          </div>
+        </section>
+
+        <section id="sec-2">
+          <h2>テストプレイからUI・ゲームバランスを改善</h2>
+          <p>本作では、ある程度ゲームが形になった段階で複数人に実際に遊んでもらい、その結果から改善を行いました。</p>
+          <p>特に、ゲームをあまり遊ばない人から「今何をすればいいのか分からない」と言われたことが大きなきっかけになりました。</p>
+          <p>自分自身はゲームに慣れているうえ、開発者なので当然すべての仕様を知っています。そのため、自分にとっては説明しなくても分かることを、初めて遊ぶ人も同じように理解できると思ってしまっていました。</p>
+          <p>そこで、現在やるべきことを常に確認できるタスク一覧を追加し、各タスクを始める際の説明も詳しくしました。</p>
+          <p>フィードバックはUIだけでなく、ゲーム進行にも反映しています。</p>
+          <p>例えば文章入力のタスクは面倒だと感じられることが多かったため、比較的早い段階で自動化できるようにしました。逆に、SNSから怪しい投稿を探す作業は好評だったため、自動化のタイミングを後ろにしています。</p>
+          <p><strong>「自分が面白いと思う順番」ではなく、実際のプレイヤーが何を楽しみ、何を負担に感じているかを基にゲームバランスを変更しました。</strong></p>
+          <hr>
+          <div class="subsection">
+            <h3>分かりやすさと世界観の両立</h3>
+            <p>タスク一覧を追加したことで進行は分かりやすくなりましたが、一方で、本作の特徴である特殊な世界観への没入感は少し弱くなりました。</p>
+            <p>今回はゲームがかなり形になった後で問題が分かったため、通常のゲームUIとして画面上に表示しました。</p>
+            <p>最初から設計するのであれば、掲示板やメモなど、ゲーム世界の中に同じ情報を組み込みます。</p>
+            <p>テストプレイを通して、単に説明量を増やせばよいのではなく、<strong>「どう説明するか」まで世界観と一緒に設計する必要がある</strong>と考えるようになりました。</p>
+          </div>
+        </section>
+
+        <section id="sec-3">
+          <h2>80人・約800件のデータとランダム要素の管理</h2>
+          <p>学校内には<strong>80人の生徒</strong>が存在し、セリフ、借りる本、SNS投稿などを含めて<strong>約800件のデータ</strong>を扱っています。SNS投稿だけでも約200〜300件を用意しました。</p>
+          <p>大量の文章コンテンツについてはAIも利用し、個人制作でも1〜2時間分のボリュームを確保できるよう制作工程自体を効率化しました。人物ごとの設定やゲーム内での役割に合わせて整理したうえで組み込んでいます。</p>
+          <p>各生徒には1〜80の識別番号を割り当て、セリフ、貸出情報、SNS投稿などでも同じ番号を対応させました。</p>
+          <p>人物ごとにすべての情報を一つにまとめる方法もありますが、実際に作業するときは「全員分の本を扱う」「SNS投稿だけを編集する」「セリフをまとめて確認する」といった使い方が多かったため、制作時には用途ごとに配列を分けています。</p>
+          <p>また、ストーリーに関わる人物については、セリフ、借りる本、SNS投稿などが一人の人物として矛盾しないよう固定しました。一方で、固定する必要のない部分はランダムにし、プレイごとに少し違う内容になるようにしています。</p>
+          <p>一度使ったかどうかを管理する必要がある投稿や貸出情報などは使用済み状態を保持し、同じ内容が不自然に繰り返されないようにしました。</p>
+          <hr>
+          <div class="subsection">
+            <h3>ランダムでも同じ状態を再現できるようにする</h3>
+            <p>大量のコンテンツをランダムに組み合わせると毎回変化を作れる一方、特定の組み合わせで問題が発生した場合に、その状態をもう一度作ることが難しくなります。</p>
+            <p>そこで、ゲーム状態を決めるIDを用意し、そのIDを基に乱数を決定するようにしました。</p>
+            <p>同じIDなら同じランダム結果になるため、特定のプレイで問題が発生した場合にも、その状態を再現して原因を確認できます。</p>
+            <p>また、ランダムに生成された内容そのものをゲーム進行条件にはせず、<strong>生成された内容に対してプレイヤーが何をしたか</strong>によって進行するようにしました。これにより、ランダムコンテンツとゲーム進行を比較的独立して扱えるようにしています。</p>
+            <p>同じ考え方はSNSのプロフィールアイコンにも利用しています。</p>
+            <p>80人以上のアイコンをすべて手作業で登録するのではなく、名前の一文字目と背景色から自動生成するようにしました。ただし背景色を完全な乱数にすると、同じ名前の人物でも表示するたびに色が変わってしまいます。</p>
+            <p>そこで名前をIDのように使って背景色を決定し、<strong>同じ人物なら常に同じ見た目になるようにしながら、手作業での登録を不要にしました。</strong></p>
+          </div>
+        </section>
+
+        <section id="sec-4">
+          <h2>長時間ゲームを効率よくデバッグできるようにする</h2>
+          <p>1プレイが1時間以上になるため、確認したい処理が後半にあるたびに最初からプレイすると、開発時間の多くが移動やタスク消化に使われてしまいます。</p>
+          <p>そこで、ゲーム進行に関する処理を一か所にまとめました。</p>
+          <p>各章やタスクのクリア条件を満たした際に進行用の処理を呼び出す構成にし、「どの条件で進んだのか」「なぜ次に進まないのか」を追いやすくしています。</p>
+          <p>さらに開発中は、必要なPCアプリや機能を直接有効にすることで、途中のタスク付近から確認できるようにしました。</p>
+          <p>この仕組みによって、長時間のゲームでも確認したい機能へすぐ到達でき、デバッグの反復をしやすくしています。</p>
+          <p>一方で、制作初期に全体のコード構成を十分設計せず、必要な機能を追加していったため、PlayerControllerに処理が集まりました。後半では一つのスクリプトが大きくなり、変更箇所や影響範囲を追いにくくなりました。</p>
+          <p>テキストなどのデータは比較的まとまっていて扱いやすかった一方、処理側には似た関数も複数ありました。現在なら入力、移動、インタラクション、UI、ゲーム進行などを責務ごとに分け、共通化できる処理も整理します。</p>
+          <p><strong>大量の機能を実装できることと、機能が増えても変更しやすい構造にすることは別である</strong>と実感した制作でもあります。</p>
+          <hr>
+          <div class="subsection">
+            <h3>実際に遊ばれる環境まで確認する</h3>
+            <p>Unity上では何度も長時間のデバッグを行っていましたが、UnityRoomで公開した後、プレイヤーから日本語入力が正常にできないという報告を受けました。</p>
+            <p>エディタ上で動作していても、公開環境に変われば入力などの条件も変わります。</p>
+            <p>この経験から、開発環境での確認だけでなく、<strong>実際にプレイヤーが利用するビルド・公開形式自体もテスト対象として扱う必要がある</strong>と考えるようになりました。</p>
+          </div>
+        </section>
+
+        <section id="sec-5">
+          <h2>限られたアセットで「80人が生活している学校」を作る</h2>
+          <p>個人制作なので、生徒80人すべてに専用モデルを用意できるわけではありません。</p>
+          <p>同じモデルを少しずつ変えて配置する必要がありますが、単純に大量のNPCを置くと、同じ人物が何度もいるような既視感や、全員が無関係に立っている不自然さが目立ちます。</p>
+          <p>そこで、色、顔、体格、アニメーションを変えるだけでなく、<strong>NPC同士の関係性まで含めて学校全体を作ること</strong>を意識しました。</p>
+          <p>例えば、バスケットボールをしている生徒たちの近くに、それを見ながら応援している生徒を配置しています。複数人で歌っているグループの横には、その歌を楽しそうに聞いている人物を置きました。女子生徒を壁の陰からこっそり見ている男子生徒など、位置関係だけで小さな出来事が想像できる配置も作っています。</p>
+          <p>一つのグループの中だけでなく、そのグループと周囲の人物にも関係を持たせています。</p>
+          <p>実際の学校では、周囲にいる人間が全員知らない相手というより、友人や知り合い同士が多いと考えたためです。</p>
+          <p>キャラクターは長く会話するわけではないので、見た目、位置、アニメーションから人物像が想像できることも重視しました。</p>
+          <p>オタクらしい人物が集まっていたり、運動系の人物がバスケットボールをしていたりする一方、優等生のように見える人物がギターを弾いているなど、見た目通りの役割だけにならない組み合わせも入れています。</p>
+          <hr>
+          <div class="subsection">
+            <h3>プレイヤーが見る場所ほど差を大きくする</h3>
+            <p>限られたアセットを均等に使うのではなく、自分で何度も校内を歩き、<strong>どこが頻繁に視界へ入るか</strong>を確認しました。</p>
+            <p>学校の中央などプレイヤーがよく通る場所では、顔、色、体格、アニメーション、行動の異なるNPCを多く配置しています。</p>
+            <p>一方、建物の両端など注目されにくい場所では、比較的似たアセットも利用しています。</p>
+            <p>特に廊下を歩く生徒は何度も視界に入るため、色や顔、体格などの差を意識的に大きくしました。</p>
+            <p>すべてを同じ密度で作り込むのではなく、<strong>プレイヤーから見た重要度に応じて制作コストを配分しています。</strong></p>
+            <p>体格についても、例えばフィジカルが強い設定のキャラクターでは、上半身側の親ボーンを約1.3倍にしました。</p>
+            <p>専用モデルを新たに作らなくてもシルエットが大きく変わり、遠くからでも体格の良い人物だと分かります。</p>
+            <p>単純な変更でも、一目で認識できる差を付けることで、同じ体格の人物ばかりが存在する不自然さを減らしました。</p>
+          </div>
+        </section>
+
+        <section id="sec-6">
+          <h2>ゲーム内PCも長時間プレイを前提に設計</h2>
+          <p>ゲーム内PCは複数のタスクで使用するため、プレイヤーが長い時間見る画面になります。</p>
+          <p>ゲーム全体がローポリでシンプルな世界観なので、PCだけを細かく作り込みすぎると、全体の情報の粒度が合わなくなります。</p>
+          <p>そこで、ローポリの世界観に合わせてPC画面も比較的シンプルにし、さらに長時間見ても疲れない情報量を意識しました。</p>
+          <p>レイアウトや操作方法は実在するアプリやサービスを参考にし、初めて触った場合でも直感的に操作しやすくしています。</p>
+          <p>一方で、ゲーム中に使わない機能や装飾はかなり簡略化しました。</p>
+          <p>逆にプレイヤーが実際に見る部分には情報を持たせ、SNSでは人物ごとにアイコンを変えるなど、同じ画面を何度も見ている印象を弱めています。</p>
+          <p>自分で一から作っているため、さらに細かく作り込むこと自体はできますが、<strong>作り込めるから作り込むのではなく、世界観やプレイ時間を考えて適切なところで情報量を抑える</strong>ことを意識しました。</p>
+          <hr>
+        </section>
+
+        <section id="sec-7">
+          <h2>操作記録からオープニング演出を制作</h2>
+          <p>学校内を歩き回るオープニングでは、自分で操作したカメラワークをそのまま利用できる仕組みを作りました。</p>
+          <p>プレイ中にプレイヤーの位置とカメラが向いている方向を継続して記録し、そのデータをファイルとして書き出します。</p>
+          <p>オープニングではそのファイルを読み込み、記録した軌道をゲーム内で再生します。</p>
+          <p>これによって、自分自身が実際に学校内を歩きながら構図や移動速度を決め、その結果を何度でも同じように再現できるようにしました。</p>
+          <p>ただし、手操作をそのまま再生すると、マウス操作による細かな手ブレまで映像に残ります。</p>
+          <p>そこで、位置とカメラ方向の両方に平滑化を加えました。</p>
+          <p>平滑化の強さも固定せず、数値で変更できるようにしています。強くすると滑らかになる一方で元の軌跡から離れ、弱くすると手ブレが残るため、複数の値を実際に試し、再生結果を比較しながら自然に見える設定を選びました。</p>
+          <p><strong>操作を記録するだけでなく、再利用しやすいデータとして保存し、再生結果を調整できるところまで仕組み化しています。</strong></p>
+        </section>
+        <div class="article-actions">
+          <a class="button" href="https://unityroom.com/games/lib-police-sim" target="_blank" rel="noopener noreferrer">Unityroomで開く</a>
+          <a class="button secondary" href="https://www.youtube.com/watch?v=zH98LdLz5Fs&list=PLg_dwQJGlxvwXczsGahAcecXnoaELAmrG&index=1" target="_blank" rel="noopener noreferrer">プレイ動画を見る</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> 小野 敬生</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
