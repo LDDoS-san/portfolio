@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SEKIRO風剣戟アクション 制作記事 — 小野 敬生のポートフォリオ</title>
+  <meta name="description" content="SEKIRO風剣戟アクションの制作記事。演出、手触り、弾き、状態管理、第二形態演出について紹介します。" />
+  <style>
+    :root{
+      --bg:#f9fafb;
+      --card:#ffffff;
+      --accent:#6366f1;
+      --accent-soft:#eef2ff;
+      --accent-line:rgba(99, 102, 241, 0.22);
+      --text:#1e293b;
+      --muted:#64748b;
+      --strong:#111827;
+      --radius:14px;
+      color-scheme: light;
+      font-family:'Inter', system-ui, sans-serif;
+    }
+
+    *{box-sizing:border-box;}
+    html,
+    body{
+      overflow-x:clip;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.85;
+    }
+
+    header{
+      padding:24px 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#ffffff;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
+    .logo{
+      font-weight:800;
+      font-size:20px;
+      color:#111827;
+    }
+    nav a{
+      color:#334155;
+      text-decoration:none;
+      margin:0 12px;
+      font-weight:600;
+    }
+    nav a:hover{color:var(--accent);}
+
+    @media(max-width:640px){
+      header{
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
+        padding:12px 14px;
+      }
+      .logo{
+        text-align:center;
+        font-size:17px;
+        line-height:1.35;
+      }
+      nav{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        column-gap:2px;
+        row-gap:4px;
+      }
+      nav a{
+        margin:0;
+        padding:6px 10px;
+        font-size:13px;
+      }
+      main{
+        width:100vw;
+        max-width:100vw;
+        padding-left:18px;
+        padding-right:18px;
+      }
+    }
+
+    main{
+      width:100%;
+      max-width:1120px;
+      margin:0 auto;
+      padding:48px 40px 72px;
+    }
+
+    .back-link{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-bottom:24px;
+      color:var(--accent);
+      font-weight:800;
+      text-decoration:none;
+    }
+    .back-link:hover{text-decoration:underline;}
+
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap:32px;
+      align-items:center;
+      padding:32px;
+      border-radius:var(--radius);
+      background:linear-gradient(135deg, #ffffff, #eef2ff);
+      border:1px solid var(--accent-line);
+      box-shadow:0 10px 28px rgba(15, 23, 42, 0.08);
+      overflow:hidden;
+    }
+    .hero > *{
+      min-width:0;
+    }
+    .eyebrow{
+      display:inline-block;
+      margin:0 0 12px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(99, 102, 241, 0.12);
+      color:#4f46e5;
+      font-size:13px;
+      font-weight:800;
+    }
+    h1{
+      margin:0 0 16px;
+      color:var(--strong);
+      font-size:clamp(30px, 5vw, 48px);
+      line-height:1.18;
+      letter-spacing:0;
+    }
+    .hero-lead{
+      margin:0;
+      color:#334155;
+      font-size:17px;
+      overflow-wrap:anywhere;
+    }
+    .hero-focus{
+      margin:18px 0 0;
+      padding:16px 18px;
+      border-radius:12px;
+      background:#111827;
+      color:#ffffff;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.7;
+      overflow-wrap:anywhere;
+    }
+    .hero-focus span{
+      color:#c7d2fe;
+    }
+    .hero-image{
+      margin:0;
+      overflow:hidden;
+      border-radius:12px;
+      box-shadow:0 16px 36px rgba(15, 23, 42, 0.16);
+      background:#fff;
+    }
+    .hero-image img{
+      display:block;
+      width:100%;
+      max-width:100%;
+      aspect-ratio:16 / 10;
+      object-fit:cover;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:16px;
+      margin:28px 0 40px;
+    }
+    .summary-card{
+      padding:18px;
+      border-radius:12px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .summary-card span{
+      display:block;
+      margin-bottom:6px;
+      color:var(--accent);
+      font-size:13px;
+      font-weight:800;
+    }
+    .summary-card strong{
+      display:block;
+      color:var(--strong);
+      font-size:17px;
+      line-height:1.45;
+    }
+
+    .article-layout{
+      display:grid;
+      grid-template-columns:220px minmax(0, 1fr);
+      gap:32px;
+      align-items:start;
+    }
+    .toc{
+      position:sticky;
+      top:96px;
+      z-index:20;
+      align-self:start;
+      max-height:calc(100vh - 120px);
+      overflow-y:auto;
+      padding:16px;
+      border-radius:12px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .toc h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--strong);
+    }
+    .toc a{
+      display:block;
+      padding:6px 0;
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      text-decoration:none;
+      line-height:1.5;
+    }
+    .toc a:hover{color:var(--accent);}
+
+    article{
+      min-width:0;
+    }
+    section{
+      margin:0 0 42px;
+      padding:28px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
+      scroll-margin-top:130px;
+    }
+    section h2{
+      margin:0 0 16px;
+      color:var(--strong);
+      font-size:26px;
+      line-height:1.35;
+    }
+    section h3{
+      margin:24px 0 10px;
+      color:var(--strong);
+      font-size:18px;
+      line-height:1.45;
+    }
+    p{
+      margin:0 0 14px;
+      color:#334155;
+    }
+    p:last-child{margin-bottom:0;}
+
+    .section-lead{
+      margin:0 0 18px;
+      padding:14px 16px;
+      border-radius:12px;
+      background:var(--accent-soft);
+      border:1px solid var(--accent-line);
+      color:#312e81;
+      font-size:15px;
+      font-weight:800;
+      line-height:1.7;
+      overflow-wrap:anywhere;
+    }
+
+    .callout{
+      margin:20px 0;
+      padding:18px 20px;
+      border-left:4px solid var(--accent);
+      border-radius:10px;
+      background:var(--accent-soft);
+    }
+    .callout strong{
+      display:block;
+      margin-bottom:4px;
+      color:#3730a3;
+    }
+    .quote-problem{
+      margin:20px 0;
+      padding:22px;
+      border-radius:12px;
+      background:#111827;
+      color:#ffffff;
+      text-align:center;
+      font-size:22px;
+      font-weight:900;
+      line-height:1.5;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:16px;
+      margin:20px 0;
+    }
+    .triad{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .mini-card{
+      padding:16px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .mini-card h3{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+    .mini-card p{
+      margin:0;
+      font-size:14px;
+    }
+
+    .visual-flow{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin:18px 0 20px;
+      align-items:stretch;
+    }
+    .flow-chip{
+      position:relative;
+      padding:14px 14px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#111827;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.55;
+      text-align:center;
+    }
+    .flow-chip:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      right:-9px;
+      top:50%;
+      width:8px;
+      height:8px;
+      border-top:2px solid var(--accent);
+      border-right:2px solid var(--accent);
+      transform:translateY(-50%) rotate(45deg);
+    }
+
+    .metric-row{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .metric{
+      padding:16px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      text-align:center;
+    }
+    .metric strong{
+      display:block;
+      color:var(--accent);
+      font-size:24px;
+      line-height:1.2;
+    }
+    .metric span{
+      display:block;
+      margin-top:6px;
+      color:#475569;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.45;
+    }
+
+    .before-after{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin:18px 0 20px;
+    }
+    .before-after div{
+      padding:16px;
+      border-radius:12px;
+      border:1px solid #e2e8f0;
+      background:#f8fafc;
+    }
+    .before-after strong{
+      display:block;
+      margin-bottom:6px;
+      color:#111827;
+      font-size:15px;
+    }
+    .before-after .after{
+      border-color:var(--accent-line);
+      background:var(--accent-soft);
+    }
+
+    .process-list{
+      display:grid;
+      gap:12px;
+      margin:18px 0 0;
+      padding:0;
+      list-style:none;
+      counter-reset:step;
+    }
+    .process-list li{
+      position:relative;
+      padding:16px 16px 16px 56px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .process-list li::before{
+      counter-increment:step;
+      content:counter(step);
+      position:absolute;
+      top:16px;
+      left:16px;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:var(--accent);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .image-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+      margin:22px 0 0;
+    }
+    .image-grid figure{
+      margin:0;
+      overflow:hidden;
+      border-radius:12px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+    }
+    .image-grid img{
+      display:block;
+      width:100%;
+      aspect-ratio:16 / 9;
+      object-fit:cover;
+    }
+    .image-grid figcaption{
+      padding:10px 12px;
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.5;
+    }
+
+    .takeaway{
+      background:linear-gradient(135deg, #eef2ff, #ffffff);
+      border-color:var(--accent-line);
+    }
+    .takeaway ul{
+      margin:14px 0 0;
+      padding-left:20px;
+      color:#334155;
+    }
+    .takeaway li{
+      margin:8px 0;
+    }
+
+    .article-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+    .details-list{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+    .detail-item{
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      background:#f8fafc;
+      overflow:hidden;
+    }
+    .detail-item summary{
+      cursor:pointer;
+      padding:14px 16px;
+      color:#111827;
+      font-size:16px;
+      font-weight:900;
+      line-height:1.5;
+      list-style:none;
+    }
+    .detail-item summary::-webkit-details-marker{
+      display:none;
+    }
+    .detail-item summary::after{
+      content:"+";
+      float:right;
+      color:var(--accent);
+      font-size:18px;
+      line-height:1.2;
+    }
+    .detail-item[open] summary::after{
+      content:"-";
+    }
+    .detail-item-body{
+      padding:0 16px 16px;
+      border-top:1px solid #e2e8f0;
+    }
+    .detail-item-body p{
+      margin-top:12px;
+    }
+    .button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 18px;
+      border-radius:10px;
+      background:var(--accent);
+      color:#ffffff;
+      font-weight:800;
+      text-decoration:none;
+    }
+    .button.secondary{
+      background:#ffffff;
+      color:var(--accent);
+      border:1px solid var(--accent-line);
+    }
+
+    .plain-article{
+      display:block;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      margin:0;
+      padding:32px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 8px 24px rgba(15, 23, 42, 0.06);
+      color:var(--text);
+      font:inherit;
+      line-height:1.9;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      word-wrap:break-word;
+      word-break:break-all;
+      overflow-x:hidden;
+    }
+
+    .article-hero{
+      position:relative;
+      margin-bottom:28px;
+      padding:34px 38px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid var(--accent-line);
+      box-shadow:0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    .article-title-row{
+      display:block;
+      padding-right:190px;
+      margin-bottom:20px;
+    }
+    .article-title-icon{
+      position:absolute;
+      top:34px;
+      right:38px;
+      width:156px;
+      height:156px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 10px 24px rgba(15, 23, 42, 0.16);
+      background:#f1f5f9;
+    }
+    .article-hero h1{
+      flex:1 1 auto;
+      max-width:900px;
+      margin:0;
+      font-size:clamp(30px, 4.6vw, 52px);
+      line-height:1.22;
+    }
+    .article-hero h1 span{
+      display:block;
+    }
+    .article-hero h1 span:first-child{
+      white-space:nowrap;
+    }
+    .article-hero h1 span + span{
+      margin-top:6px;
+      font-size:0.82em;
+      color:#334155;
+    }
+    .intro-text{
+      display:grid;
+      gap:14px;
+      width:100%;
+      padding:20px 22px;
+      border-left:5px solid var(--accent);
+      border-radius:0 12px 12px 0;
+      background:var(--accent-soft);
+    }
+    .intro-text p{
+      margin:0;
+      color:#243247;
+      font-size:16px;
+      font-weight:650;
+      line-height:1.9;
+    }
+    .polished-article-layout{
+      margin-top:0;
+    }
+    .article-body{
+      display:grid;
+      gap:24px;
+    }
+    .article-body section{
+      padding:32px 36px;
+      border-radius:var(--radius);
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      box-shadow:0 8px 24px rgba(15, 23, 42, 0.055);
+      scroll-margin-top:128px;
+    }
+    .article-body section h2{
+      position:relative;
+      margin:0 0 22px;
+      padding-left:18px;
+      color:var(--strong);
+      font-size:26px;
+      line-height:1.45;
+    }
+    .article-body section h2::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0.35em;
+      bottom:0.35em;
+      width:5px;
+      border-radius:999px;
+      background:var(--accent);
+    }
+    .article-body p{
+      margin:16px 0 0;
+      color:#26364d;
+      font-size:16px;
+      line-height:2;
+    }
+    .article-body ul,
+    .article-body ol{
+      margin:18px 0 0;
+      padding:18px 22px 18px 42px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#26364d;
+      line-height:1.9;
+    }
+    .article-body li{
+      margin:6px 0;
+      padding-left:2px;
+      font-weight:700;
+    }
+    .article-body strong{
+      color:#3730a3;
+      font-weight:900;
+      background:linear-gradient(transparent 62%, rgba(199, 210, 254, 0.78) 62%);
+    }
+    .article-body hr{
+      height:1px;
+      margin:28px 0;
+      border:0;
+      background:#e5e7eb;
+    }
+    .article-body hr:last-child{
+      display:none;
+    }
+    .subsection{
+      margin-top:26px;
+      padding:22px 24px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+    }
+    .subsection h3{
+      margin:0 0 12px;
+      color:#111827;
+      font-size:19px;
+      line-height:1.55;
+    }
+    .subsection p:first-of-type{
+      margin-top:0;
+    }
+    .article-body .article-actions{
+      margin-top:4px;
+      padding:24px 0 0;
+    }
+
+    footer{
+      padding:24px;
+      text-align:center;
+      color:#64748b;
+      font-size:14px;
+      border-top:1px solid rgba(0,0,0,0.05);
+      background:#ffffff;
+    }
+
+    @media(max-width:900px){
+      main{
+        width:100vw;
+        max-width:100vw;
+        padding:32px 18px 56px;
+      }
+      .hero{
+        grid-template-columns:1fr;
+        padding:18px;
+      }
+      .hero-focus{
+        width:100%;
+        max-width:280px;
+        font-size:13px;
+        padding:12px 14px;
+        line-height:1.65;
+        word-break:break-all;
+      }
+      .hero-image{
+        width:100%;
+        max-width:280px;
+      }
+      .summary-grid{
+        grid-template-columns:1fr;
+      }
+      .article-layout{
+        grid-template-columns:1fr;
+      }
+      .toc{
+        position:sticky;
+        top:104px;
+        max-height:42vh;
+      }
+      .toc div{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        column-gap:12px;
+      }
+      .article-hero{
+        padding:24px 22px;
+      }
+      .article-title-row{
+        padding-right:116px;
+      }
+      .article-title-icon{
+        top:24px;
+        right:22px;
+        width:102px;
+        height:102px;
+        border-radius:12px;
+      }
+      .intro-text{
+        padding:16px 18px;
+      }
+    }
+
+    @media(max-width:560px){
+      section{
+        padding:20px;
+      }
+      .article-hero{
+        padding:22px 18px;
+      }
+      .article-title-row{
+        padding-right:98px;
+      }
+      .article-title-icon{
+        top:22px;
+        right:18px;
+        width:86px;
+        height:86px;
+        border-radius:10px;
+      }
+      .article-hero h1{
+        font-size:21px;
+      }
+      .article-hero h1 span + span{
+        font-size:0.68em;
+        white-space:nowrap;
+      }
+      .article-body section{
+        padding:24px 20px;
+      }
+      .article-body section h2{
+        font-size:22px;
+        padding-left:14px;
+      }
+      .subsection{
+        padding:18px 16px;
+      }
+      .split,
+      .triad,
+      .visual-flow,
+      .metric-row,
+      .before-after,
+      .image-grid{
+        grid-template-columns:1fr;
+      }
+      .flow-chip:not(:last-child)::after{
+        display:none;
+      }
+      .toc div{
+        grid-template-columns:1fr;
+      }
+      .quote-problem{
+        font-size:18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">小野 敬生のポートフォリオ</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="games.html">ゲーム作品</a>
+      <a href="research.html">研究</a>
+      <a href="others.html">その他作品</a>
+    </nav>
+  </header>
+
+  <main>
+    <a class="back-link" href="games.html">← ゲーム作品一覧へ戻る</a>
+
+    <div class="article-hero">
+      <p class="eyebrow">Unity / 個人制作 / 剣戟アクション</p>
+      <div class="article-title-row">
+        <h1 aria-label="5εκlЯ0｜演出と手触りを重視した個人制作">
+          <span>5εκlЯ0</span>
+          <span>演出と手触りを重視した個人制作</span>
+        </h1>
+        <img class="article-title-icon" src="images/game13_icon.png" alt="5εκlЯ0のアイコン">
+      </div>
+      <div class="intro-text">
+        <p>本作では、SEKIROを参考にした剣戟アクションを制作しました。</p>
+          <p>これまでの個人制作では、見た目や演出そのものを強く押し出す作品はあまり作ってこなかったため、今回は<strong>「かっこよく見えること」と「操作して気持ちいいこと」</strong>を特に重視しました。</p>
+          <p>限られたアニメーションやエフェクトを使いながらも、動きのつながり、弾きのタイミング、効果音、カメラ、第二形態への移行演出などを細かく調整し、安っぽく見えない剣戟アクションを目指しました。</p>
+      </div>
+    </div>
+
+    <div class="article-layout polished-article-layout">
+      <aside class="toc" aria-label="目次">
+        <h2>目次</h2>
+        <div>
+          <a href="#sec-1">難しいけど理不尽ではない調整</a>
+          <a href="#sec-2">第二形態に新しい体験を持たせる</a>
+          <a href="#sec-3">限られた素材でも安っぽく見せない</a>
+          <a href="#sec-4">複雑な攻撃状態を段階値で整理</a>
+          <a href="#sec-5">音・エフェクトで爽快感を強調</a>
+          <a href="#sec-6">限られた素材で印象的な演出を</a>
+          <a href="#sec-7">カメラと地形でストレスのない戦闘を</a>
+          <a href="#sec-8">ランキングで別の遊び方も用意</a>
+        </div>
+      </aside>
+
+      <article class="article-body">
+        <section id="sec-1">
+          <h2>弾きの「難しいけど理不尽ではない」を調整</h2>
+          <p>剣戟の中心になる弾きは、見た目通りの厳密な判定にはせず、実際には少し余裕を持たせています。</p>
+          <p>ガードボタンを押してからアニメーションが完全にガード姿勢になるまで待って判定を出すと、プレイヤーからすると「押したのに間に合わなかった」と感じやすくなります。</p>
+          <p>一方で、ボタンを押した直後からすぐ弾けるようにすると、攻撃を見てから簡単に反応できたり、連打するだけで多くの攻撃を弾けたりしてしまいます。</p>
+          <p>そこで、</p>
+          <ul>
+            <li>攻撃を見てから反応できる程度の猶予は持たせる</li>
+            <li>押した瞬間から有効にはしない</li>
+            <li>連打だけでは安定して弾けない</li>
+          </ul>
+          <p>というバランスになるよう、弾き判定の開始位置と受付時間を調整しました。</p>
+          <p>自分で何度もプレイするだけでなく、プレイ動画をフレーム単位で確認しながら、攻撃が見えてから実際に入力できるタイミングを見て調整しています。</p>
+          <p>ガードについては弾きよりも判定を甘めにしています。</p>
+          <p>ガードしているのに攻撃を受けてしまうことは操作上のストレスになりやすいため、ガード入力自体はなるべく受け付けるようにしました。その代わり、ガードできていない状態で攻撃を受けると連続してダメージを受けやすくし、緊張感自体は残しています。</p>
+          <p><strong>難易度を上げるために操作の理不尽さを増やすのではなく、ストレスを与えてよい部分と、与えるべきではない部分を分けること</strong>を意識しました。</p>
+        </section>
+
+        <section id="sec-2">
+          <h2>第二形態では「同じ弾き方」が通用しない攻撃を追加</h2>
+          <p>敵AI自体は、距離が離れていれば近づき、近距離では横移動や攻撃を選択する比較的シンプルな構成です。</p>
+          <p>攻撃については途中で止める場合もあり、1段目で終わる場合、2段目まで続く場合など変化を持たせています。</p>
+          <p>特に第二形態では、新しい5連撃パターンを追加しました。</p>
+          <p>単純に別の攻撃モーションを追加するだけではなく、第一形態で覚えた弾きタイミングをそのまま使うと失敗するように調整しています。</p>
+          <p>例えば、1種類目の連撃と似た始まり方をしながら、2種類目では途中のディレイを変えています。そのため、1種類目と同じリズムで機械的に弾こうとすると、2種類目ではタイミングがずれます。</p>
+          <p>1発目だけでなく、その後の2発目、3発目についても発生タイミングを早めたり遅らせたりし、<strong>攻撃モーションを見分けてから弾く必要があるようにしました。</strong></p>
+          <p>第二形態を単純な攻撃力上昇にせず、それまで身につけたリズムを一度崩し、再び敵の動きを見る必要がある変化として使っています。</p>
+        </section>
+
+        <section id="sec-3">
+          <h2>少ないアニメーションでも安っぽく見せない</h2>
+          <p>個人制作では使用できるアニメーションの種類が限られるため、そのまま組み合わせるだけでは動きが不自然になったり、同じ攻撃ばかりに見えたりしやすくなります。</p>
+          <p>そこで、アニメーションそのものを増やすよりも、<strong>既存のアニメーションをどう自然に見せるか</strong>を細かく調整しました。</p>
+          <p>特に意識したのが足の滑りです。</p>
+          <p>前後左右の移動については、アニメーション側の移動を利用した方が自然に見えるため、基本的にはアニメーションに任せています。</p>
+          <p>ただし、攻撃や移動の組み合わせによって足が不自然に滑る場合は、移動量や再生速度、IKなどを調整しました。</p>
+          <p>完全に滑りをなくせない場面でも、単純に地面の上を滑っているように見えるのではなく、攻撃を受けた勢いで後退している、踏ん張りながら押されている、といった動きに見えるように調整しています。</p>
+          <p>空中移動については逆に、アニメーション任せにすると当たり判定や実際の位置との整合が取りにくくなるため、上下方向の移動をコード側で制御しました。</p>
+          <p>使用するアニメーションを編集して上下方向の移動量を0にし、ジャンプ中の高さや落下速度などはゲーム側から動かしています。</p>
+          <p><strong>地上ではアニメーションの自然さを活かし、空中ではゲームロジック側の制御を優先する</strong>というように、見た目と当たり判定の両方を成立させるため役割を分けました。</p>
+        </section>
+
+        <section id="sec-4">
+          <h2>複雑な攻撃状態を段階値で整理</h2>
+          <p>制作が進むにつれて、アニメーションの条件管理がかなり複雑になりました。</p>
+          <p>例えば攻撃一つでも、</p>
+          <ul>
+            <li>攻撃前</li>
+            <li>攻撃開始</li>
+            <li>攻撃中</li>
+            <li>攻撃終了</li>
+            <li>攻撃後の硬直</li>
+          </ul>
+          <p>と複数の段階があります。</p>
+          <p>これを「攻撃中か」「硬直中か」「移動可能か」といったbool値で個別に管理すると、必要な変数が増え、組み合わせも追いにくくなります。</p>
+          <p>そこで、攻撃状態を1、2、3、4、5のような段階値として一つの変数で管理するようにしました。</p>
+          <p>弾きについても同様で、</p>
+          <ol>
+            <li>ガードボタンを押し始めた状態</li>
+            <li>弾きが成立する時間</li>
+            <li>弾き時間終了後の通常ガード</li>
+          </ol>
+          <p>というように状態を分けています。</p>
+          <p>状態が2なら弾き判定、1や3なら通常のガード判定という形にすることで、複数のboolを組み合わせるよりも現在の状態を追いやすくしました。</p>
+          <p>Animatorについても、Any Stateから必要なモーションへ遷移できる構成を利用し、複雑な遷移線を大量に作らず、比較的シンプルなAnimatorとコード側の状態管理で制御しています。</p>
+          <p>攻撃の途中から別の攻撃へつなげられるか、横移動中に攻撃できるか、攻撃中に移動できるかなど条件は多くありましたが、<strong>状態を段階としてまとめることで変数の増加を抑えました。</strong></p>
+        </section>
+
+        <section id="sec-5">
+          <h2>音・エフェクト・演出で「弾けた感」を強調</h2>
+          <p>剣戟アクションでは、攻撃判定が正しく動くだけでなく、入力した結果が気持ちよく返ってくることが重要だと考えました。</p>
+          <p>そのため、効果音とエフェクトはかなり慎重に選んでいます。</p>
+          <p>特に効果音では、全体を低めで鈍い音に寄せ、弾きが成功した瞬間だけ高い音を使いました。</p>
+          <p>通常攻撃や被弾と音域を分けることで、画面を細かく見なくても「今の攻撃は弾けた」と分かるようにしています。</p>
+          <p>エフェクト自体は大量に使わず、</p>
+          <ul>
+            <li>剣に追従する軌跡</li>
+            <li>弾き時のエフェクト</li>
+            <li>第二形態で使う目の赤い残像</li>
+          </ul>
+          <p>など、必要な箇所に絞りました。</p>
+          <p>自作にこだわるよりも、既存アセットの中からゲームに合うものを選び、剣の動きに追従させるなどして利用しています。</p>
+          <p><strong>エフェクトの量ではなく、重要な瞬間だけ視覚・聴覚の両方を強くすることで、爽快感を出すこと</strong>を意識しました。</p>
+        </section>
+
+        <section id="sec-6">
+          <h2>限られた素材で第二形態を印象的に演出</h2>
+          <p>第二形態への移行は、本作の中でも特に見た目を意識した場面です。</p>
+          <p>一度敵を倒したように見せた後、太陽が動いて昼から夜へ変化し、その中で敵が再び立ち上がります。</p>
+          <p>立ち上がる際には目に赤い残像を付け、第一形態とは異なる雰囲気を一目で分かるようにしました。</p>
+          <p>使っている要素自体は複雑ではなく、</p>
+          <ul>
+            <li>敵が一度倒れる</li>
+            <li>時間帯を昼から夜へ変える</li>
+            <li>再び立ち上がる</li>
+            <li>目に残像を付ける</li>
+          </ul>
+          <p>という比較的シンプルな組み合わせです。</p>
+          <p>しかし、一つひとつ新しいアセットを用意しなくても、<strong>既存の機能や素材を組み合わせるだけで大きな変化に見せられること</strong>が分かりました。</p>
+          <p>個人制作では使える素材に限りがあるからこそ、新しいものを大量に作るのではなく、既にあるものをどう組み合わせて印象的に見せるかを考えることも重要だと感じた部分です。</p>
+        </section>
+
+        <section id="sec-7">
+          <h2>ロックオンと地形で戦闘空間を安定させる</h2>
+          <p>カメラは、フリーカメラと敵を追従するロックオンを切り替えられるようにしました。</p>
+          <p>ロックオン中に敵の動きをそのまま追いかけると画面が急激に動くため、カメラ方向を平滑化しています。また、敵との距離によってロックオン可能範囲にも制限を設け、離れすぎた敵を無理に追い続けないようにしました。</p>
+          <p>今回は戦闘状況によってカメラ演出そのものを大きく変えるところまでは行っていませんが、制作を通して、被弾時の揺れや弾き時の寄りなどを加えることで、さらに剣戟の見栄えを強くできると感じました。</p>
+          <p>戦闘ステージについてはUnityのTerrainを使って自作しています。</p>
+          <p>欲しかったのは、中央に凸凹の少ない広い戦闘スペースがあり、その外側には自然に進入できないと分かる地形でした。</p>
+          <p>そこで、戦闘する場所は平坦な円形にし、その周囲を湖で囲っています。</p>
+          <p>さらに湖の外側には山を作り、ステージの外側が見えないようにしました。</p>
+          <p>これによって、見えない壁だけでプレイヤーを止めるのではなく、<strong>「ここが戦闘エリアで、ここから先には行けない」と景観そのものから理解できる構成</strong>にしています。</p>
+          <p>Terrainを使ったことで、戦闘スペースの広さや山の高さ、外周の形なども自分で細かく調整できました。</p>
+        </section>
+
+        <section id="sec-8">
+          <h2>ランキングで別の遊び方も用意</h2>
+          <p>UnityRoomのランキング機能も初めて実装しました。</p>
+          <p>単純にクリアタイムだけを競うのではなく、まず体力を最大まで残していることを優先し、その条件を満たしたプレイヤー同士では撃破時間が短いほど上位になるよう、ランキング用のスコアを計算しています。</p>
+          <p>これによって、単純な速さだけでなく、<strong>できるだけ被弾せず、かつ速く倒すこと</strong>を目標にできるようにしました。</p>
+          <p>ランキング機能自体は既存の情報を調べながら実装しましたが、本編とは異なるプレイ目標を追加する仕組みとして利用しています。</p>
+        </section>
+        <div class="article-actions">
+          <a class="button" href="https://unityroom.com/games/5eklr0" target="_blank" rel="noopener noreferrer">Unityroomで開く</a>
+          <a class="button secondary" href="https://www.youtube.com/watch?v=SwiPzMqhDKY&list=PLg_dwQJGlxvwXczsGahAcecXnoaELAmrG&index=1" target="_blank" rel="noopener noreferrer">プレイ動画を見る</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> 小野 敬生</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
