@@ -202,7 +202,7 @@
 
     .article-layout{
       display:grid;
-      grid-template-columns:220px minmax(0, 1fr);
+      grid-template-columns:280px minmax(0, 1fr);
       gap:32px;
       align-items:start;
     }
@@ -220,20 +220,44 @@
       box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
     }
     .toc h2{
-      margin:0 0 10px;
-      font-size:14px;
+      margin:0 0 14px;
+      font-size:17px;
       color:var(--strong);
+    }
+    .toc div{
+      counter-reset:toc-item;
     }
     .toc a{
       display:block;
-      padding:6px 0;
-      color:#475569;
-      font-size:13px;
-      font-weight:700;
+      position:relative;
+      margin-top:8px;
+      padding:11px 12px 11px 42px;
+      border-radius:10px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#334155;
+      font-size:15px;
+      font-weight:800;
       text-decoration:none;
-      line-height:1.5;
+      line-height:1.55;
     }
-    .toc a:hover{color:var(--accent);}
+    .toc a::before{
+      counter-increment:toc-item;
+      content:counter(toc-item, decimal-leading-zero);
+      position:absolute;
+      left:12px;
+      top:10px;
+      min-width:22px;
+      color:var(--accent);
+      font-size:15px;
+      font-weight:900;
+      line-height:1.55;
+    }
+    .toc a:hover{
+      color:var(--accent);
+      background:var(--accent-soft);
+      border-color:var(--accent-line);
+    }
 
     article{
       min-width:0;
@@ -851,8 +875,8 @@
     <div class="article-hero">
       <p class="eyebrow">Unity / 個人制作 / タイピングアクション</p>
       <div class="article-title-row">
-        <h1 aria-label="Winter Wars｜全キー操作と演出を両立した高速タイピングアクション">
-          <span>Winter Wars</span>
+        <h1 aria-label="ウィンターウォーズ｜全キー操作と演出を両立した高速タイピングアクション">
+          <span>ウィンターウォーズ</span>
           <span>全キー操作と演出を両立した高速タイピングアクション</span>
         </h1>
         <img class="article-title-icon" src="images/game07_icon.png" alt="Winter Warsのアイコン">
@@ -868,11 +892,11 @@
       <aside class="toc" aria-label="目次">
         <h2>目次</h2>
         <div>
-          <a href="#sec-1">大量のキーでも直感的な操作を</a>
-          <a href="#sec-2">刀の軌道を関数で制御</a>
+          <a href="#sec-1">大量のキーでも直感的な操作</a>
+          <a href="#sec-2">軌道を関数で制御</a>
           <a href="#sec-3">「出現」ではなく「召喚」</a>
           <a href="#sec-4">他作品を分析して改善</a>
-          <a href="#sec-5">共通処理とキャラ固有攻撃を分離</a>
+          <a href="#sec-5">共通処理と固有処理の分離</a>
           <a href="#sec-6">複数ステージ・3段階AI</a>
         </div>
       </aside>
@@ -998,4 +1022,3 @@
   </script>
 </body>
 </html>
-

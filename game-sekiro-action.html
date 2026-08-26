@@ -202,7 +202,7 @@
 
     .article-layout{
       display:grid;
-      grid-template-columns:220px minmax(0, 1fr);
+      grid-template-columns:280px minmax(0, 1fr);
       gap:32px;
       align-items:start;
     }
@@ -220,20 +220,44 @@
       box-shadow:0 4px 12px rgba(15, 23, 42, 0.04);
     }
     .toc h2{
-      margin:0 0 10px;
-      font-size:14px;
+      margin:0 0 14px;
+      font-size:17px;
       color:var(--strong);
+    }
+    .toc div{
+      counter-reset:toc-item;
     }
     .toc a{
       display:block;
-      padding:6px 0;
-      color:#475569;
-      font-size:13px;
-      font-weight:700;
+      position:relative;
+      margin-top:8px;
+      padding:11px 12px 11px 42px;
+      border-radius:10px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#334155;
+      font-size:15px;
+      font-weight:800;
       text-decoration:none;
-      line-height:1.5;
+      line-height:1.55;
     }
-    .toc a:hover{color:var(--accent);}
+    .toc a::before{
+      counter-increment:toc-item;
+      content:counter(toc-item, decimal-leading-zero);
+      position:absolute;
+      left:12px;
+      top:10px;
+      min-width:22px;
+      color:var(--accent);
+      font-size:15px;
+      font-weight:900;
+      line-height:1.55;
+    }
+    .toc a:hover{
+      color:var(--accent);
+      background:var(--accent-soft);
+      border-color:var(--accent-line);
+    }
 
     article{
       min-width:0;
@@ -868,14 +892,14 @@
       <aside class="toc" aria-label="目次">
         <h2>目次</h2>
         <div>
-          <a href="#sec-1">難しいけど理不尽ではない調整</a>
+          <a href="#sec-1">難しいけど理不尽ではない</a>
           <a href="#sec-2">第二形態に新しい体験を</a>
           <a href="#sec-3">安っぽく見えないように</a>
-          <a href="#sec-4">複雑な攻撃状態を段階値で整理</a>
-          <a href="#sec-5">音・エフェクトで爽快感を強調</a>
-          <a href="#sec-6">限られた素材で印象的な演出を</a>
-          <a href="#sec-7">カメラと地形でストレスのない戦闘を</a>
-          <a href="#sec-8">ランキングで別の遊び方も用意</a>
+          <a href="#sec-4">複雑な攻撃状態を整理</a>
+          <a href="#sec-5">音・VFXで爽快感</a>
+          <a href="#sec-6">少ない素材でも印象的な演出</a>
+          <a href="#sec-7">カメラと地形でストレス削減</a>
+          <a href="#sec-8">ランキングを用意</a>
         </div>
       </aside>
 
